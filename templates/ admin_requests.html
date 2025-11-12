@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Manage Access Requests</h1>
+    
+    {% if requests %}
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Website</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Urgency</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for req in requests %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ req.username }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 font-medium">
+                            <a href="{{ req.website_url }}" target="_blank" class="hover:underline">
+                                {{ req.website_url }}
+                            </a>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500 max-w-xs">
+                            {{ req.reason }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full 
+                                {% if req.urgency == 'high' %}bg-red-100 text-red-800
+                                {% elif req.urgency == 'medium' %}bg-yellow-100 text-yellow-800
+                                {% else %}bg-green-100 text-green-800{% endif %}">
+                                {{ req.urgency|upper }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs rounded-full 
+                                {% if req.status == 'approved' %}bg-green-100 text-green-800
+                                {% elif req.status == 'rejected' %}bg-red-100 text-red-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {{ req.status|upper }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ req.timestamp }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            {% if req.status == 'pending' %}
+                            <div class="flex space-x-2">
+                                <button onclick="updateRequestStatus({{ loop.index0 }}, 'approved')" 
+                                    class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs transition duration-300">
+                                    Approve
+                                </button>
+                                <button onclick="updateRequestStatus({{ loop.index0 }}, 'rejected')" 
+                                    class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs transition duration-300">
+                                    Reject
+                                </button>
+                            </div>
+                            {% else %}
+                            <span class="text-gray-400 text-xs">Processed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+        <div class="bg-white rounded-lg shadow-md p-4 text-center">
+            <div class="text-2xl font-bold text-gray-800">{{ requests|length }}</div>
+            <div class="text-sm text-gray-600">Total Requests</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-4 text-center">
+            <div class="text-2xl font-bold text-yellow-600">
+                {{ requests|selectattr('status', 'equalto', 'pending')|list|length }}
+            </div>
+            <div class="text-sm text-gray-600">Pending</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-4 text-center">
+            <div class="text-2xl font-bold text-green-600">
+                {{ requests|selectattr('status', 'equalto', 'approved')|list|length }}
+            </div>
+            <div class="text-sm text-gray-600">Approved</div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-4 text-center">
+            <div class="text-2xl font-bold text-red-600">
+                {{ requests|selectattr('status', 'equalto', 'rejected')|list|length }}
+            </div>
+            <div class="text-sm text-gray-600">Rejected</div>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-lg shadow-md p-8 text-center">
+        <i class="fas fa-inbox text-4xl text-gray-400 mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No access requests</h3>
+        <p class="text-gray-500">No one has submitted any access requests yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+async function updateRequestStatus(requestId, status) {
+    const formData = new FormData();
+    formData.append('request_id', requestId);
+    formData.append('status', status);
+    
+    try {
+        const response = await fetch('/update_request_status', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(`Request ${status} successfully!`);
+            location.reload();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error updating request status');
+    }
+}
+</script>
+{% endblock %}

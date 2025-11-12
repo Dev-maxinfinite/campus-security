@@ -1,0 +1,4 @@
+role,time_period,allowed_categories,blocked_categories
+student,class_time,educational,research,social,streaming,gaming,torrents
+student,free_time,educational,research,limited_social,torrents,adult,gaming
+faculty,all_time,educational,research,streaming,social,malicious,torrents

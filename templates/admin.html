@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+    <p class="text-gray-600">System administration and monitoring panel</p>
+</div>
+
+<!-- Statistics -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center">
+            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                <i class="fas fa-users text-blue-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold text-gray-600">Total Users</h3>
+                <p class="text-2xl font-bold text-gray-800">{{ total_users }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center">
+            <div class="bg-green-100 p-3 rounded-full mr-4">
+                <i class="fas fa-list text-green-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold text-gray-600">Total Logs</h3>
+                <p class="text-2xl font-bold text-gray-800">{{ total_logs }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <div class="flex items-center">
+            <div class="bg-red-100 p-3 rounded-full mr-4">
+                <i class="fas fa-ban text-red-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold text-gray-600">Blocked Attempts</h3>
+                <p class="text-2xl font-bold text-gray-800">{{ blocked_attempts }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Add User Form -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-user-plus mr-2 text-green-600"></i>Add New User
+        </h2>
+        <form id="addUserForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <input type="text" name="full_name" required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                <input type="text" name="username" required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" name="password" required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                <select name="role" required 
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <option value="student">Student</option>
+                    <option value="faculty">Faculty</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+            <button type="submit" 
+                class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-md transition duration-300">
+                <i class="fas fa-plus mr-2"></i>Add User
+            </button>
+        </form>
+        <div id="formMessage" class="mt-4 hidden"></div>
+    </div>
+
+    <!-- Recent Activity Logs -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <i class="fas fa-history mr-2 text-purple-600"></i>Recent Activity
+        </h2>
+        <div class="space-y-3 max-h-96 overflow-y-auto">
+            {% for log in logs|reverse %}
+            <div class="border-l-4 {% if log.status == 'BLOCKED' %}border-red-500 bg-red-50{% else %}border-green-500 bg-green-50{% endif %} pl-4 py-2">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <span class="font-semibold text-gray-800">{{ log.username }}</span>
+                        <span class="text-sm text-gray-600">({{ log.role }})</span>
+                        <p class="text-sm text-gray-700">{{ log.action }} - {{ log.category }}</p>
+                    </div>
+                    <span class="{% if log.status == 'BLOCKED' %}text-red-600{% else %}text-green-600{% endif %} text-sm font-semibold">
+                        {{ log.status }}
+                    </span>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">{{ log.timestamp }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add user form handling
+    document.getElementById('addUserForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const response = await fetch('/add_user', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        const messageDiv = document.getElementById('formMessage');
+        
+        if (result.success) {
+            messageDiv.className = 'mt-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded';
+            messageDiv.innerHTML = '<i class="fas fa-check mr-2"></i>' + result.message;
+            this.reset();
+        } else {
+            messageDiv.className = 'mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded';
+            messageDiv.innerHTML = '<i class="fas fa-times mr-2"></i>' + result.error;
+        }
+        
+        messageDiv.classList.remove('hidden');
+        setTimeout(() => messageDiv.classList.add('hidden'), 5000);
+    });
+</script>
+{% endblock %}

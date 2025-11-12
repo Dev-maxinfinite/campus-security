@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">My Profile</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Personal Info -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">👤 Personal Information</h2>
+            <div class="space-y-2">
+                <p><strong>Name:</strong> {{ full_name }}</p>
+                <p><strong>Username:</strong> {{ user }}</p>
+                <p><strong>Role:</strong> <span class="capitalize bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm">{{ role }}</span></p>
+                <p><strong>Status:</strong> <span class="text-green-600 font-semibold">Active</span></p>
+                <p><strong>Last Login:</strong> {{ last_login }}</p>
+            </div>
+        </div>
+
+        <!-- Access Stats -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-4">📊 Access Statistics</h2>
+            <div class="space-y-2">
+                <p><strong>Total Logins:</strong> <span class="font-bold">{{ total_logins }}</span></p>
+                <p><strong>Policy Checks:</strong> <span class="font-bold">{{ policy_checks }}</span></p>
+                <p><strong>Blocked Attempts:</strong> <span class="font-bold text-red-600">{{ blocked_count }}</span></p>
+                <p><strong>Success Rate:</strong> 
+                    <span class="font-bold text-green-600">
+                        {% if policy_checks > 0 %}
+                            {{ ((policy_checks - blocked_count) / policy_checks * 100)|round|int }}%
+                        {% else %}
+                            100%
+                        {% endif %}
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Policies -->
+    <div class="bg-white rounded-lg shadow-md p-6 mt-6">
+        <h2 class="text-xl font-bold text-gray-800 mb-4">📋 My Access Policies</h2>
+        <div class="space-y-4">
+            {% for policy in policies %}
+            <div class="border-l-4 border-blue-500 pl-4 py-3 bg-blue-50 rounded-r-lg">
+                <h3 class="font-semibold text-gray-800 text-lg capitalize">{{ policy.time_period.replace('_', ' ') }}</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                    <div>
+                        <p class="text-sm font-medium text-green-700">✅ Allowed Categories:</p>
+                        <p class="text-sm text-gray-600 ml-2">{{ policy.allowed_categories.replace(',', ', ') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-red-700">❌ Blocked Categories:</p>
+                        <p class="text-sm text-gray-600 ml-2">{{ policy.blocked_categories.replace(',', ', ') }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

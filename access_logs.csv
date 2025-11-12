@@ -1,0 +1,10 @@
+timestamp,username,role,action,category,status
+2025-11-13 03:35:55,admin,admin,login,system,SUCCESS
+2025-11-13 03:36:24,admin,admin,access_check,educational,ALLOWED
+2025-11-13 03:36:28,admin,admin,access_check,research,ALLOWED
+2025-11-13 03:36:30,admin,admin,access_check,social,ALLOWED
+2025-11-13 03:40:38,admin,admin,access_check,research,ALLOWED
+2025-11-13 03:40:40,admin,admin,access_check,social,ALLOWED
+2025-11-13 03:40:42,admin,admin,access_check,streaming,ALLOWED
+2025-11-13 03:56:44,admin,admin,access_check,educational,ALLOWED
+2025-11-13 03:56:46,admin,admin,access_check,research,ALLOWED

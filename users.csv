@@ -1,0 +1,4 @@
+username,password,role,full_name
+admin,admin123,admin,System Administrator
+student1,pass123,student,Rahul Sharma
+faculty1,pass123,faculty,Dr. Priya Singh
